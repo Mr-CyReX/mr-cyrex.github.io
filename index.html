@@ -1,1440 +1,230 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="Cy — Motion Designer and Video Editor specializing in editing, motion graphics, compositing, and VFX."
-    />
-    <title>Cy — Motion Designer &amp; Video Editor</title>
-    <style>
-      :root {
-        --bg: #07070c;
-        --surface: rgba(255, 255, 255, 0.035);
-        --line: rgba(255, 255, 255, 0.1);
-        --text: #f5f5f7;
-        --muted: rgba(245, 245, 247, 0.66);
-        --dim: rgba(245, 245, 247, 0.43);
-        --accent: #5865f2;
-        --accent2: #aeb5ff;
-        --violet: #8b5cf6;
-        --max: 1120px;
-        --ease: cubic-bezier(0.16, 1, 0.3, 1);
-      }
-
-      * {
-        box-sizing: border-box;
-        margin: 0;
-      }
-
-      html {
-        scroll-behavior: smooth;
-      }
-
-      body {
-        background: var(--bg);
-        color: var(--text);
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-          sans-serif;
-        -webkit-font-smoothing: antialiased;
-        overflow-x: hidden;
-      }
-
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        z-index: 20;
-        pointer-events: none;
-        opacity: 0.045;
-        background-image: radial-gradient(#fff 0.6px, transparent 0.6px);
-        background-size: 5px 5px;
-      }
-
-      a {
-        color: inherit;
-        text-decoration: none;
-      }
-
-      /* ========================= PROGRESS ========================= */
-      .progress {
-        position: fixed;
-        z-index: 100;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 2px;
-        background: linear-gradient(90deg, var(--accent), var(--violet));
-        transform: scaleX(0);
-        transform-origin: left center;
-        will-change: transform;
-      }
-
-      /* ========================= CURSOR GLOW ========================= */
-      .cursor-glow {
-        position: fixed;
-        z-index: 1;
-        pointer-events: none;
-        width: 640px;
-        height: 640px;
-        left: 0;
-        top: 0;
-        margin: -320px 0 0 -320px;
-        border-radius: 50%;
-        opacity: 0;
-        background: radial-gradient(
-          circle,
-          rgba(88, 101, 242, 0.16) 0%,
-          rgba(88, 101, 242, 0.07) 35%,
-          rgba(88, 101, 242, 0) 70%
-        );
-        will-change: transform, opacity;
-        transition: opacity 0.7s ease;
-      }
-
-      .cursor-glow.on {
-        opacity: 1;
-      }
-
-      /* ========================= NAV ========================= */
-      .nav {
-        position: fixed;
-        z-index: 50;
-        top: 0;
-        left: 0;
-        right: 0;
-        border-bottom: 1px solid transparent;
-        transition:
-          background 0.4s ease,
-          border-color 0.4s ease,
-          backdrop-filter 0.4s ease;
-      }
-
-      .nav.scrolled {
-        background: rgba(7, 7, 12, 0.72);
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
-        border-color: rgba(255, 255, 255, 0.08);
-      }
-
-      .nav-inner {
-        max-width: var(--max);
-        margin: auto;
-        padding: 18px 24px;
-        display: flex;
-        align-items: center;
-        gap: 24px;
-      }
-
-      .logo {
-        font: 800 1rem "Courier New", monospace;
-      }
-
-      .logo b {
-        color: var(--accent);
-      }
-
-      .role {
-        flex: 1;
-        text-align: center;
-        color: var(--dim);
-        font-size: 0.78rem;
-      }
-
-      .links {
-        display: flex;
-        gap: 25px;
-      }
-
-      .links a {
-        font-size: 0.85rem;
-        color: var(--muted);
-        transition:
-          color 0.3s ease,
-          transform 0.3s ease;
-      }
-
-      .links a:hover {
-        color: var(--accent2);
-        transform: translateY(-1px);
-      }
-
-      main,
-      footer {
-        position: relative;
-        z-index: 2;
-      }
-
-      /* ========================= HERO ========================= */
-      .hero {
-        min-height: 100svh;
-        padding: 130px 24px 100px;
-        display: grid;
-        place-content: center;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-        isolation: isolate;
-        background: linear-gradient(
-          180deg,
-          #090a18 0%,
-          #0b0b18 58%,
-          #0a0a14 82%,
-          var(--bg) 100%
-        );
-      }
-
-      .hero::before {
-        content: "";
-        position: absolute;
-        inset: -56px;
-        background-image:
-          linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-        background-size: 56px 56px;
-        mask-image: radial-gradient(
-          ellipse 70% 60% at 50% 45%,
-          #000 20%,
-          transparent 75%
-        );
-        -webkit-mask-image: radial-gradient(
-          ellipse 70% 60% at 50% 45%,
-          #000 20%,
-          transparent 75%
-        );
-        animation: gridDrift 18s linear infinite;
-        will-change: transform;
-      }
-
-      @keyframes gridDrift {
-        from {
-          transform: translate3d(0, 0, 0);
-        }
-        to {
-          transform: translate3d(0, 56px, 0);
-        }
-      }
-
-      .hero::after {
-        content: "";
-        position: absolute;
-        z-index: 1;
-        left: 0;
-        right: 0;
-        bottom: -1px;
-        height: 220px;
-        pointer-events: none;
-        background: linear-gradient(
-          180deg,
-          rgba(7, 7, 12, 0),
-          var(--bg) 88%
-        );
-      }
-
-      .hero > *:not(.orb) {
-        position: relative;
-        z-index: 2;
-      }
-
-      /* ========================= ORBS ========================= */
-      .orb {
-        position: absolute;
-        border-radius: 50%;
-        pointer-events: none;
-        will-change: transform;
-        filter: blur(90px);
-      }
-
-      .orb.a {
-        width: 500px;
-        height: 500px;
-        top: -180px;
-        left: -130px;
-        background: radial-gradient(
-          circle,
-          rgba(88, 101, 242, 0.42),
-          transparent 68%
-        );
-        animation: orbFloatA 11s ease-in-out infinite alternate;
-      }
-
-      .orb.b {
-        width: 440px;
-        height: 440px;
-        right: -140px;
-        bottom: -160px;
-        background: radial-gradient(
-          circle,
-          rgba(139, 92, 246, 0.3),
-          transparent 68%
-        );
-        animation: orbFloatB 14s ease-in-out infinite alternate;
-        animation-delay: -4s;
-      }
-
-      @keyframes orbFloatA {
-        0% {
-          transform: translate3d(0, 0, 0) scale(1);
-        }
-        50% {
-          transform: translate3d(35px, 25px, 0) scale(1.05);
-        }
-        100% {
-          transform: translate3d(-15px, 45px, 0) scale(1.1);
-        }
-      }
-
-      @keyframes orbFloatB {
-        0% {
-          transform: translate3d(0, 0, 0) scale(1);
-        }
-        50% {
-          transform: translate3d(-30px, -25px, 0) scale(1.08);
-        }
-        100% {
-          transform: translate3d(20px, -55px, 0) scale(0.96);
-        }
-      }
-
-      /* ========================= HERO TEXT ========================= */
-      .eyebrow,
-      .label {
-        font-size: 0.73rem;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: var(--dim);
-      }
-
-      .eyebrow::before,
-      .label::before {
-        content: "";
-        display: inline-block;
-        width: 7px;
-        height: 7px;
-        margin-right: 11px;
-        border-radius: 50%;
-        background: var(--accent);
-        box-shadow: 0 0 14px rgba(88, 101, 242, 0.9);
-        vertical-align: 1px;
-      }
-
-      .hero h1 {
-        position: relative;
-        margin-top: 27px;
-        font-size: clamp(3rem, 9vw, 6.8rem);
-        line-height: 1.02;
-        letter-spacing: -0.055em;
-        max-width: 900px;
-      }
-
-      .accent {
-        background: linear-gradient(
-          100deg,
-          var(--accent2),
-          var(--accent) 50%,
-          var(--violet)
-        );
-        background-size: 220% 100%;
-        background-clip: text;
-        -webkit-background-clip: text;
-        color: transparent;
-        animation: gradientShift 6s ease-in-out infinite alternate;
-      }
-
-      @keyframes gradientShift {
-        0% {
-          background-position: 0% 0%;
-        }
-        100% {
-          background-position: 100% 0%;
-        }
-      }
-
-      .hero-sub {
-        position: relative;
-        max-width: 620px;
-        margin: 28px auto 0;
-        color: var(--muted);
-        font-size: 1.08rem;
-        line-height: 1.7;
-      }
-
-      /* ========================= HERO LOAD ANIMATION ========================= */
-      .hero .eyebrow {
-        animation: heroIn 0.9s var(--ease) both;
-        animation-delay: 0.15s;
-      }
-
-      .hero h1 {
-        animation: heroIn 0.95s var(--ease) both;
-        animation-delay: 0.28s;
-      }
-
-      .hero-sub {
-        animation: heroIn 0.95s var(--ease) both;
-        animation-delay: 0.42s;
-      }
-
-      @keyframes heroIn {
-        from {
-          opacity: 0;
-          transform: translate3d(0, 35px, 0);
-        }
-        to {
-          opacity: 1;
-          transform: translate3d(0, 0, 0);
-        }
-      }
-
-      /* ========================= SECTIONS ========================= */
-      .section {
-        padding: clamp(90px, 13vw, 155px) 24px;
-        border-bottom: 1px solid var(--line);
-      }
-
-      .inner {
-        max-width: var(--max);
-        margin: auto;
-      }
-
-      .section h2 {
-        margin-top: 18px;
-        max-width: 720px;
-        font-size: clamp(2rem, 4.6vw, 3.5rem);
-        line-height: 1.1;
-        letter-spacing: -0.045em;
-      }
-
-      .section h2 em {
-        font-style: normal;
-        color: var(--accent2);
-      }
-
-      .lead {
-        margin-top: 26px;
-        max-width: 700px;
-        color: var(--muted);
-        font-size: 1.07rem;
-        line-height: 1.75;
-      }
-
-      /* ========================= FLOW ========================= */
-      .flow {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 40px;
-      }
-
-      .step {
-        padding: 11px 18px;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        background: var(--surface);
-        font-size: 0.87rem;
-        color: var(--muted);
-        transition:
-          border-color 0.4s var(--ease),
-          transform 0.4s var(--ease),
-          box-shadow 0.4s var(--ease);
-      }
-
-      .step:hover {
-        border-color: rgba(88, 101, 242, 0.65);
-        transform: translateY(-3px);
-        box-shadow: 0 12px 35px -15px rgba(88, 101, 242, 0.8);
-      }
-
-      .arrow {
-        color: var(--accent);
-        font-size: 1rem;
-      }
-
-      /* ========================= CARDS ========================= */
-      .cards {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-        margin-top: 55px;
-      }
-
-      .card {
-        position: relative;
-        padding: 25px;
-        border: 1px solid var(--line);
-        border-radius: 22px;
-        background: linear-gradient(
-          180deg,
-          rgba(255, 255, 255, 0.045),
-          rgba(255, 255, 255, 0.015)
-        );
-        overflow: hidden;
-        transition:
-          transform 0.55s var(--ease),
-          border-color 0.4s,
-          box-shadow 0.55s;
-        will-change: transform;
-      }
-
-      .card:hover {
-        transform: translateY(-6px);
-        border-color: rgba(88, 101, 242, 0.6);
-        box-shadow: 0 25px 70px -30px rgba(88, 101, 242, 0.65);
-      }
-
-      .card::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        opacity: 0;
-        background: radial-gradient(
-          360px circle at var(--x, 50%) var(--y, 50%),
-          rgba(88, 101, 242, 0.14),
-          transparent 72%
-        );
-        transition: opacity 0.4s;
-      }
-
-      .card:hover::after {
-        opacity: 1;
-      }
-
-      .stage {
-        height: 132px;
-        margin-bottom: 24px;
-        border: 1px solid rgba(255, 255, 255, 0.07);
-        border-radius: 14px;
-        background: rgba(0, 0, 0, 0.3);
-        display: grid;
-        place-items: center;
-        overflow: hidden;
-      }
-
-      .tag {
-        color: var(--accent2);
-        font-size: 0.7rem;
-        font-weight: 650;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-      }
-
-      .card h3 {
-        position: relative;
-        margin-top: 11px;
-        font-size: 1.35rem;
-        letter-spacing: -0.02em;
-      }
-
-      .desc {
-        position: relative;
-        margin-top: 12px;
-        color: var(--muted);
-        font-size: 0.94rem;
-        line-height: 1.65;
-      }
-
-      .tags {
-        position: relative;
-        margin-top: 18px;
-        color: var(--dim);
-        font-size: 0.78rem;
-      }
-
-      /* ========================= EQUALIZER ========================= */
-      .bars {
-        display: flex;
-        gap: 7px;
-        align-items: flex-end;
-        height: 56px;
-      }
-
-      .bars i {
-        display: block;
-        width: 7px;
-        border-radius: 5px;
-        background: linear-gradient(var(--accent2), var(--accent));
-        transform-origin: bottom center;
-        will-change: transform;
-      }
-
-      .bars i:nth-child(1) {
-        height: 24px;
-        animation: equalize 0.9s ease-in-out infinite alternate;
-        animation-delay: -0.1s;
-      }
-      .bars i:nth-child(2) {
-        height: 44px;
-        animation: equalize 1.15s ease-in-out infinite alternate;
-        animation-delay: -0.35s;
-      }
-      .bars i:nth-child(3) {
-        height: 58px;
-        animation: equalize 0.95s ease-in-out infinite alternate;
-        animation-delay: -0.65s;
-      }
-      .bars i:nth-child(4) {
-        height: 35px;
-        animation: equalize 1.25s ease-in-out infinite alternate;
-        animation-delay: -0.15s;
-      }
-      .bars i:nth-child(5) {
-        height: 50px;
-        animation: equalize 1.05s ease-in-out infinite alternate;
-        animation-delay: -0.5s;
-      }
-      .bars i:nth-child(6) {
-        height: 29px;
-        animation: equalize 0.85s ease-in-out infinite alternate;
-        animation-delay: -0.8s;
-      }
-
-      @keyframes equalize {
-        0% {
-          transform: scaleY(0.3);
-        }
-        100% {
-          transform: scaleY(1);
-        }
-      }
-
-      /* ========================= KINETIC TYPE ========================= */
-      .kinetic {
-        font-size: 2.2rem;
-        font-weight: 800;
-        letter-spacing: 0.03em;
-      }
-
-      .kinetic i {
-        display: inline-block;
-        font-style: normal;
-        will-change: transform;
-        animation: lift 1.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-      }
-
-      .kinetic i:nth-child(1) {
-        animation-delay: -0.2s;
-      }
-      .kinetic i:nth-child(2) {
-        animation-delay: -0.05s;
-      }
-      .kinetic i:nth-child(3) {
-        color: var(--accent);
-        animation-delay: -0.35s;
-      }
-      .kinetic i:nth-child(4) {
-        animation-delay: -0.15s;
-      }
-      .kinetic i:nth-child(5) {
-        animation-delay: -0.45s;
-      }
-      .kinetic i:nth-child(6) {
-        color: var(--accent2);
-        animation-delay: -0.7s;
-      }
-
-      @keyframes lift {
-        0%,
-        100% {
-          transform: translate3d(0, 3px, 0);
-        }
-        50% {
-          transform: translate3d(0, -11px, 0);
-        }
-      }
-
-      /* ========================= SCANNER HUD ========================= */
-      .scan-hud {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        padding: 10px 20px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-        user-select: none;
-      }
-
-      .res-badge {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-        font-size: 0.78rem;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-      }
-
-      .res-badge.low {
-        color: var(--dim);
-        filter: blur(0.6px);
-        opacity: 0.6;
-      }
-
-      .res-badge.high {
-        color: var(--accent2);
-        text-shadow: 0 0 12px rgba(88, 101, 242, 0.8), 0 0 24px rgba(139, 92, 246, 0.4);
-      }
-
-      .scan-track {
-        position: relative;
-        width: 70px;
-        height: 2px;
-        background: rgba(255, 255, 255, 0.12);
-        border-radius: 2px;
-      }
-
-      .scan-laser {
-        position: absolute;
-        top: -7px;
-        bottom: -7px;
-        width: 3px;
-        border-radius: 3px;
-        background: var(--accent);
-        box-shadow: 0 0 8px var(--accent), 0 0 16px var(--violet);
-        will-change: transform;
-        animation: laserSweep 2s ease-in-out infinite alternate;
-      }
-
-      @keyframes laserSweep {
-        0% {
-          transform: translate3d(0, 0, 0);
-        }
-        100% {
-          transform: translate3d(67px, 0, 0);
-        }
-      }
-
-      /* ========================= MORPHING SHAPE ========================= */
-      .blob {
-        width: 78px;
-        height: 78px;
-        border-radius: 48% 52% 58% 42%;
-        background: radial-gradient(
-          circle at 35% 30%,
-          var(--accent2),
-          var(--accent) 58%,
-          #3944ad
-        );
-        box-shadow: 0 0 40px rgba(88, 101, 242, 0.6);
-        will-change: transform, border-radius;
-        animation: morph 6s ease-in-out infinite alternate;
-      }
-
-      @keyframes morph {
-        0% {
-          border-radius: 48% 52% 58% 42%;
-          transform: rotate(0deg) scale(1);
-        }
-        50% {
-          border-radius: 63% 37% 44% 56%;
-          transform: rotate(15deg) scale(1.05);
-        }
-        100% {
-          border-radius: 58% 42% 40% 60%;
-          transform: rotate(30deg) scale(1.1);
-        }
-      }
-
-      /* ========================= SKILLS ========================= */
-      .grid3 {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 34px;
-        margin-top: 55px;
-      }
-
-      .skill {
-        border-top: 1px solid var(--line);
-        padding-top: 23px;
-        transition:
-          border-color 0.4s,
-          transform 0.4s var(--ease);
-      }
-
-      .skill:hover {
-        border-color: var(--accent);
-        transform: translateY(-4px);
-      }
-
-      .skill h3 {
-        color: var(--accent2);
-        font-size: 1.15rem;
-      }
-
-      .skill p {
-        margin-top: 12px;
-        color: var(--muted);
-        font-size: 0.93rem;
-        line-height: 1.7;
-      }
-
-      /* ========================= CHIPS ========================= */
-      .chips {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 11px;
-        margin-top: 42px;
-      }
-
-      .chip {
-        padding: 11px 20px;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        color: var(--muted);
-        font-size: 0.88rem;
-        transition:
-          color 0.4s var(--ease),
-          border-color 0.4s var(--ease),
-          background 0.4s var(--ease),
-          transform 0.4s var(--ease);
-      }
-
-      .chip:hover {
-        color: #fff;
-        border-color: rgba(88, 101, 242, 0.65);
-        background: rgba(88, 101, 242, 0.14);
-        transform: translateY(-3px);
-      }
-
-      /* ========================= CENTER ========================= */
-      .center {
-        text-align: center;
-      }
-
-      .center h2,
-      .center .lead {
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-      /* ========================= MARQUEE ========================= */
-      .marquee {
-        overflow: hidden;
-        margin-top: 60px;
-        mask-image: linear-gradient(
-          90deg,
-          transparent,
-          #000 14%,
-          #000 86%,
-          transparent
-        );
-        -webkit-mask-image: linear-gradient(
-          90deg,
-          transparent,
-          #000 14%,
-          #000 86%,
-          transparent
-        );
-      }
-
-      .track {
-        display: flex;
-        width: max-content;
-        will-change: transform;
-        animation: marquee 30s linear infinite;
-      }
-
-      .group {
-        display: flex;
-        gap: 30px;
-        padding-right: 30px;
-        white-space: nowrap;
-      }
-
-      .mi {
-        color: var(--muted);
-        font-size: 1rem;
-      }
-
-      .sep {
-        color: var(--accent);
-      }
-
-      @keyframes marquee {
-        from {
-          transform: translate3d(0, 0, 0);
-        }
-        to {
-          transform: translate3d(-50%, 0, 0);
-        }
-      }
-
-      /* ========================= CONTACT ========================= */
-      .contact h2 {
-        font-size: clamp(2.5rem, 6vw, 4.8rem);
-      }
-
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 12px;
-        margin-top: 42px;
-        padding: 16px 29px;
-        border-radius: 999px;
-        background: var(--accent);
-        font-weight: 650;
-        box-shadow: 0 14px 45px -12px rgba(88, 101, 242, 0.7);
-        transition:
-          background 0.4s var(--ease),
-          transform 0.4s var(--ease),
-          box-shadow 0.4s var(--ease);
-      }
-
-      .btn:hover {
-        background: #6872f5;
-        transform: translateY(-4px);
-        box-shadow: 0 22px 55px -10px rgba(88, 101, 242, 0.85);
-      }
-
-      .handle {
-        margin-top: 18px;
-        color: var(--dim);
-        font-size: 0.82rem;
-        letter-spacing: 0.06em;
-      }
-
-      /* ========================= FOOTER ========================= */
-      footer {
-        padding: 35px 24px;
-        border-top: 1px solid var(--line);
-        color: var(--dim);
-        font-size: 0.78rem;
-      }
-
-      .footer-inner {
-        max-width: var(--max);
-        margin: auto;
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        flex-wrap: wrap;
-      }
-
-      /* ========================= PROFILE BLEND ========================= */
-      #profile {
-        position: relative;
-        margin-top: -1px;
-        background: var(--bg);
-      }
-
-      #profile::before {
-        content: "";
-        position: absolute;
-        z-index: -1;
-        left: 0;
-        right: 0;
-        top: -100px;
-        height: 130px;
-        pointer-events: none;
-        background: linear-gradient(
-          180deg,
-          rgba(7, 7, 12, 0),
-          var(--bg) 78%
-        );
-      }
-
-      /* ========================= SCROLL REVEALS ========================= */
-      .reveal {
-        opacity: 0;
-        transform: translate3d(0, 36px, 0);
-        transition:
-          opacity 0.9s ease,
-          transform 0.9s var(--ease);
-        transition-delay: var(--delay, 0s);
-      }
-
-      .reveal.left {
-        transform: translate3d(-36px, 20px, 0);
-      }
-
-      .reveal.right {
-        transform: translate3d(36px, 20px, 0);
-      }
-
-      .reveal.in {
-        opacity: 1;
-        transform: translate3d(0, 0, 0);
-      }
-
-      /* ========================= STAGGER ========================= */
-      .stagger > * {
-        opacity: 0;
-        transform: translate3d(0, 24px, 0);
-        transition:
-          opacity 0.75s ease,
-          transform 0.85s var(--ease);
-      }
-
-      .stagger.in > * {
-        opacity: 1;
-        transform: translate3d(0, 0, 0);
-      }
-
-      .stagger.in > *:nth-child(1) {
-        transition-delay: 0.05s;
-      }
-      .stagger.in > *:nth-child(2) {
-        transition-delay: 0.11s;
-      }
-      .stagger.in > *:nth-child(3) {
-        transition-delay: 0.17s;
-      }
-      .stagger.in > *:nth-child(4) {
-        transition-delay: 0.23s;
-      }
-      .stagger.in > *:nth-child(5) {
-        transition-delay: 0.29s;
-      }
-      .stagger.in > *:nth-child(6) {
-        transition-delay: 0.35s;
-      }
-      .stagger.in > *:nth-child(7) {
-        transition-delay: 0.41s;
-      }
-      .stagger.in > *:nth-child(8) {
-        transition-delay: 0.47s;
-      }
-      .stagger.in > *:nth-child(9) {
-        transition-delay: 0.53s;
-      }
-
-      /* ========================= RESPONSIVE ========================= */
-      @media (max-width: 850px) {
-        .role {
-          display: none;
-        }
-        .grid3 {
-          grid-template-columns: 1fr;
-          gap: 38px;
-        }
-        .cards {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      @media (max-width: 540px) {
-        .nav-inner {
-          padding: 16px 20px;
-        }
-        .links {
-          gap: 15px;
-        }
-        .links a {
-          font-size: 0.78rem;
-        }
-        .section {
-          padding-left: 20px;
-          padding-right: 20px;
-        }
-        .flow {
-          gap: 7px;
-        }
-        .step {
-          padding: 9px 13px;
-          font-size: 0.8rem;
-        }
-        .footer-inner {
-          flex-direction: column;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="progress" aria-hidden="true"></div>
-    <div class="cursor-glow" aria-hidden="true"></div>
-
-    <header class="nav">
-      <div class="nav-inner">
-        <a class="logo" href="#top"> &lt;/<b>Cy</b>&gt; </a>
-        <span class="role"> Motion designer · Video editor · Compositor </span>
-        <nav class="links">
-          <a href="#profile">Profile</a>
-          <a href="#work">Work</a>
-          <a href="#contact">Contact</a>
-        </nav>
+<html lang="en" data-theme="dark" data-accent="cobalt" data-grade="full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Cy — motion designer, editor, motion director, VFX. CUTROOM: a living cut you scrub through. Scroll is the playhead.">
+<meta name="theme-color" content="#0a0e17">
+<title>/Cy — CUTROOM</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a0e17'/%3E%3Cpath d='M11 9l-5 7 5 7M21 9l5 7-5 7' stroke='%236f9cf5' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body class="is-booting">
+
+<!-- ══════════════ BOOT / loader — runs every visit, seeded variant ══════════════ -->
+<div id="boot" aria-hidden="true">
+  <div class="boot-frame">
+    <div class="boot-head mono">
+      <span class="boot-chip">CUTROOM</span>
+      <span class="boot-tc" id="bootTc">00:00:00:00</span>
+    </div>
+    <div class="boot-mark" id="bootMark">
+      <b>&lt;</b><b>/</b><b>C</b><b>y</b><b>&gt;</b>
+    </div>
+    <div class="boot-term mono" id="bootTerm"></div>
+    <div class="boot-barwrap">
+      <div class="boot-barticks"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="boot-bar"><i id="bootFill"></i></div>
+      <div class="boot-bar-meta mono"><span id="bootPct">0%</span><span id="bootMsg">warming the room</span></div>
+    </div>
+  </div>
+  <div class="boot-shutter shutter-a" aria-hidden="true"></div>
+  <div class="boot-shutter shutter-b" aria-hidden="true"></div>
+</div>
+
+<!-- ══════════════ error trap — click badge to copy a relay-ready report ══════════════ -->
+<button id="errtrap" class="mono" type="button" hidden>ERR ×0</button>
+
+<!-- ══════════════ topbar — glass chrome ══════════════ -->
+<header id="topbar">
+  <button class="brand" id="brandBtn" type="button" aria-label="Back to the top">
+    <span class="brand-mark">&lt;/<b>Cy</b>&gt;</span>
+    <span class="brand-sub mono">cutroom</span>
+  </button>
+  <div class="top-status mono" aria-live="polite">
+    <i class="rec-dot" id="recDot"></i>
+    <span id="cutReadout">CUT 01 · COLD OPEN</span>
+  </div>
+  <div class="top-actions">
+    <button class="chip" id="sndBtn" type="button" aria-label="Toggle sound" aria-pressed="false"><span class="chip-key">snd</span><b id="sndState">off</b></button>
+    <button class="chip" id="accBtn" type="button" aria-label="Change accent"><i class="acc-dot" id="accDot"></i><b id="accState">cobalt</b></button>
+    <button class="chip" id="thmBtn" type="button" aria-label="Toggle theme"><b id="thmState">dark</b><span class="chip-key">/ light</span></button>
+  </div>
+</header>
+
+<!-- ══════════════ the cut sequence — native scroll + snap, zero hijack ══════════════ -->
+<main id="reel">
+
+  <!-- CUT 01 — COLD OPEN -->
+  <section class="cut cut-1" id="cut1" data-cut="COLD OPEN" data-index="0">
+    <div class="cut-inner">
+      <p class="kicker mono" data-r style="--d:.05s"><i class="tick"></i>a living cut · beirut</p>
+      <h1 class="giant" id="cyMark" data-r style="--d:.14s">
+        <span class="g-char">&lt;</span><span class="g-char">/</span><span class="g-char acc">C</span><span class="g-char">y</span><span class="g-char">&gt;</span>
+      </h1>
+      <div class="queue" data-r style="--d:.4s">
+        <span class="q-item">motion designer</span><span class="q-slash">/</span>
+        <span class="q-item">video editor</span><span class="q-slash">/</span>
+        <span class="q-item">motion director</span><span class="q-slash">/</span>
+        <span class="q-item">vfx artist</span>
       </div>
-    </header>
+      <div class="bars" id="bars" data-r style="--d:.55s" aria-hidden="true"></div>
+      <p class="mono micro note-1" data-r style="--d:.66s">the site is the reel — no videos, everything you see is performed live by your browser</p>
+    </div>
+    <div class="cut-scroll-cue mono" aria-hidden="true"><span>scroll = playhead</span><i></i></div>
+    <div class="cut-tag mono" aria-hidden="true">CUT01</div>
+  </section>
 
-    <main id="top">
-      <section class="hero">
-        <div class="orb a"></div>
-        <div class="orb b"></div>
-        <p class="eyebrow">Freelance — motion design · editing · VFX</p>
-        <h1>Make every<br />frame <span class="accent">move.</span></h1>
-        <p class="hero-sub">
-          Motion design, editing, compositing, and VFX for content that has to
-          earn its attention — built to look more expensive than it was.
-        </p>
-      </section>
-
-      <section class="section" id="profile">
-        <div class="inner">
-          <div class="label reveal left">Profile</div>
-          <h2 class="reveal">You get two seconds. <em>I make them count.</em></h2>
-          <p class="lead reveal" style="--delay: 0.12s">
-            Audiences decide in the first two seconds whether to stay or scroll.
-            My job is to make them stay — with timing, hierarchy, and motion
-            that feels inevitable instead of decorated.
-          </p>
-          <p class="lead reveal" style="--delay: 0.22s">
-            I build polished sequences from layered assets, animation systems,
-            and procedural workflows. Somewhere between traditional editing and
-            motion design: aggressive when the frame calls for it, clean
-            always.
-          </p>
-          <div class="flow stagger">
-            <span class="step">Strong visual identity</span>
-            <span class="arrow">→</span>
-            <span class="step">Precise timing</span>
-            <span class="arrow">→</span>
-            <span class="step">Clean compositing</span>
-            <span class="arrow">→</span>
-            <span class="step">Efficient workflow</span>
-          </div>
+  <!-- CUT 02 — THE GRAPH -->
+  <section class="cut cut-2" id="cut2" data-cut="THE GRAPH" data-index="1">
+    <div class="cut-inner">
+      <div class="split">
+        <div class="split-copy">
+          <p class="kicker mono" data-r style="--d:.05s"><i class="tick"></i>cut 02 · the graph</p>
+          <h2 class="display" data-r style="--d:.12s">smooth is<br><span class="acc">a decision.</span></h2>
+          <p class="body-copy" data-r style="--d:.24s">anticipation first — every move here leaves on the house curve. pick one and watch the weight change. the ball travels the same distance; the graph decides how it feels.</p>
+          <p class="mono micro" data-r style="--d:.32s">house curve · cubic-bezier(.22, 1, .36, 1) — cuts land 1–2f early, always</p>
         </div>
-      </section>
-
-      <section class="section" id="work">
-        <div class="inner">
-          <div class="label reveal left">What I do</div>
-          <h2 class="reveal">Four lanes, <em>one standard.</em></h2>
-          <div class="cards">
-            <article class="card reveal left">
-              <div class="stage">
-                <div class="bars">
-                  <i></i><i></i><i></i><i></i><i></i><i></i>
-                </div>
-              </div>
-              <div class="tag">Social &amp; short-form editing</div>
-              <h3>Rhythm that retains</h3>
-              <p class="desc">
-                Edits built for retention — hooks that land, cuts on the beat,
-                and pacing that never lets the thumb win.
-              </p>
-              <p class="tags">Music-driven cuts · sequencing · restructuring</p>
-            </article>
-
-            <article class="card reveal right" style="--delay: 0.1s">
-              <div class="stage">
-                <div class="kinetic">
-                  <i>M</i><i>O</i><i>T</i><i>I</i><i>O</i><i>N</i>
-                </div>
-              </div>
-              <div class="tag">Motion graphics</div>
-              <h3>Designed in motion</h3>
-              <p class="desc">
-                Custom type, transitions, and effects built from scratch in After
-                Effects. No template packs. Your brand, moving like it means
-                it.
-              </p>
-              <p class="tags">Kinetic type · VFX · animation systems</p>
-            </article>
-
-            <article class="card reveal left" style="--delay: 0.18s">
-              <div class="stage">
-                <div class="scan-hud">
-                  <div class="res-badge low">480p</div>
-                  <div class="scan-track">
-                    <div class="scan-laser"></div>
-                  </div>
-                  <div class="res-badge high">4K HDR</div>
-                </div>
-              </div>
-              <div class="tag">Visual enhancement</div>
-              <h3>More from the frame</h3>
-              <p class="desc">
-                Upscaling, restoration, sharpening, and cleanup. Footage shot on
-                whatever becomes footage that looks intentional.
-              </p>
-              <p class="tags">Cleanup · enhancement · restoration</p>
-            </article>
-
-            <article class="card reveal right" style="--delay: 0.26s">
-              <div class="stage">
-                <div class="blob"></div>
-              </div>
-              <div class="tag">Creative focus</div>
-              <h3>Visual transformation</h3>
-              <p class="desc">
-                Ordinary assets pushed into stylized, cinematic territory —
-                anime-inspired language, heavy compositing, nothing generic.
-              </p>
-              <p class="tags">Anime-inspired · cinematic · high-energy</p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="inner">
-          <div class="label reveal left">Core skills</div>
-          <h2 class="reveal">Deep where it <em>matters.</em></h2>
-          <div class="grid3 stagger">
-            <div class="skill">
-              <h3>Motion Design</h3>
-              <p>
-                Advanced After Effects workflows — 2D animation, compositing,
-                kinetic typography, transitions, and VFX.
-              </p>
+        <div class="lab" data-r style="--d:.2s">
+          <div class="lab-stage">
+            <div class="lab-curvebox">
+              <span class="mono lab-corner">f(x)</span>
+              <svg class="lab-svg" viewBox="0 0 120 100" preserveAspectRatio="none" aria-hidden="true">
+                <path class="lab-curve" id="labCurve" d="M4,96 C30,96 44,4 116,4"></path>
+              </svg>
+              <i class="lab-ball" id="labBall"></i>
             </div>
-            <div class="skill">
-              <h3>Video Editing</h3>
-              <p>
-                Short-form and social-first editing, music-driven cuts,
-                sequencing, restructuring, and narrative rhythm.
-              </p>
-            </div>
-            <div class="skill">
-              <h3>VFX &amp; Image Processing</h3>
-              <p>
-                Advanced compositing and visual cleanup, AI-assisted
-                enhancement, and Topaz-based upscaling and restoration.
-              </p>
-            </div>
+            <div class="lab-track"><i class="lab-runner" id="labRunner"></i><b class="lab-target"></b></div>
+          </div>
+          <div class="lab-tiles" id="labTiles">
+            <button class="lab-tile is-on" type="button" data-ease="power3" data-bezier=".22,1,.36,1" style="--d:.28s" data-r>
+              <svg viewBox="0 0 100 80" aria-hidden="true"><path d="M6,74 C34,74 44,6 94,6"></path></svg>
+              <span class="mono">power3.out</span>
+            </button>
+            <button class="lab-tile" type="button" data-ease="expo" data-bezier=".16,1,.3,1" style="--d:.34s" data-r>
+              <svg viewBox="0 0 100 80" aria-hidden="true"><path d="M6,74 C18,74 22,6 94,6"></path></svg>
+              <span class="mono">expo.out</span>
+            </button>
+            <button class="lab-tile" type="button" data-ease="back" data-bezier=".34,1.56,.64,1" style="--d:.4s" data-r>
+              <svg viewBox="0 0 100 80" aria-hidden="true"><path d="M6,74 C30,80 40,-8 94,6"></path></svg>
+              <span class="mono">back.out(1.56)</span>
+            </button>
+            <button class="lab-tile" type="button" data-ease="lin" data-bezier="0,0,1,1" style="--d:.46s" data-r>
+              <svg viewBox="0 0 100 80" aria-hidden="true"><path d="M6,74 L94,6"></path></svg>
+              <span class="mono">linear — the enemy</span>
+            </button>
           </div>
         </div>
-      </section>
-
-      <section class="section center">
-        <div class="inner">
-          <div class="label reveal">Software &amp; tools</div>
-          <h2 class="reveal">Tools change monthly. <em>Taste doesn't.</em></h2>
-          <p class="lead reveal">
-            A practical toolkit for building visuals that hit quickly and stay
-            memorable.
-          </p>
-          <div class="chips stagger">
-            <span class="chip">After Effects</span>
-            <span class="chip">Premiere Pro</span>
-            <span class="chip">DaVinci Resolve</span>
-            <span class="chip">Topaz</span>
-            <span class="chip">Remotion</span>
-            <span class="chip">AI video systems</span>
-            <span class="chip">Generative AI workflows</span>
-          </div>
-        </div>
-      </section>
-
-      <section class="section center">
-        <div class="inner">
-          <div class="label reveal">Creative focus</div>
-          <h2 class="reveal">
-            Stylized visuals, precise rhythm, and systems that make ambitious work
-            <em>repeatable.</em>
-          </h2>
-          <div class="marquee reveal">
-            <div class="track">
-              <div class="group">
-                <span class="mi">Anime-inspired visual language</span>
-                <span class="sep">✦</span>
-                <span class="mi">Cinematic compositing</span>
-                <span class="sep">✦</span>
-                <span class="mi">High-energy motion graphics</span>
-                <span class="sep">✦</span>
-                <span class="mi">Music-synchronized editing</span>
-                <span class="sep">✦</span>
-                <span class="mi">Stylized VFX</span>
-                <span class="sep">✦</span>
-                <span class="mi">AI-assisted visual production</span>
-                <span class="sep">✦</span>
-              </div>
-              <div class="group" aria-hidden="true">
-                <span class="mi">Anime-inspired visual language</span>
-                <span class="sep">✦</span>
-                <span class="mi">Cinematic compositing</span>
-                <span class="sep">✦</span>
-                <span class="mi">High-energy motion graphics</span>
-                <span class="sep">✦</span>
-                <span class="mi">Music-synchronized editing</span>
-                <span class="sep">✦</span>
-                <span class="mi">Stylized VFX</span>
-                <span class="sep">✦</span>
-                <span class="mi">AI-assisted visual production</span>
-                <span class="sep">✦</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section contact center" id="contact">
-        <div class="inner">
-          <div class="label reveal">Contact</div>
-          <h2 class="reveal">Let's make something worth <em>rewatching.</em></h2>
-          <p class="lead reveal">
-            Send raw clips, a rough idea, or a finished edit that needs more
-            punch — I’ll tell you honestly what I’d do with it.
-          </p>
-          <div class="flow stagger" style="justify-content: center">
-            <span class="step">Send footage &amp; references</span>
-            <span class="arrow">→</span>
-            <span class="step">First cut, fast</span>
-            <span class="arrow">→</span>
-            <span class="step">Tight iterations</span>
-            <span class="arrow">→</span>
-            <span class="step">Final delivery</span>
-          </div>
-          <a
-            class="btn reveal"
-            href="https://discord.com/users/mrcyrex"
-            target="_blank"
-            rel="noopener"
-          >
-            Discord: mrcyrex#0914 ↗
-          </a>
-          <p class="handle reveal">
-            Fast replies · honest scopes · on-time delivery
-          </p>
-        </div>
-      </section>
-    </main>
-
-    <footer>
-      <div class="footer-inner">
-        <a class="logo" href="#top"> &lt;/<b>Cy</b>&gt; </a>
-        <span>Motion Designer / Video Editor</span>
-        <span>Built for visual impact · 2026</span>
       </div>
-    </footer>
+    </div>
+    <div class="cut-tag mono" aria-hidden="true">CUT02</div>
+  </section>
 
-    <script>
-      (() => {
-        /* ========================= INITIAL LOAD ========================= */
-        document.documentElement.classList.add('js-ready');
+  <!-- CUT 03 — KINETIC -->
+  <section class="cut cut-3" id="cut3" data-cut="KINETIC" data-index="2">
+    <div class="cut-inner">
+      <p class="kicker mono" data-r style="--d:.05s"><i class="tick"></i>cut 03 · kinetic</p>
+      <div class="kinetic" id="kinetic" aria-live="off">
+        <h2 class="k-line k-1" data-r style="--d:.12s"><span class="k-word">type</span> <span class="k-word">is</span> <span class="k-word">a</span> <span class="k-word acc">prop.</span></h2>
+        <h2 class="k-line k-2" data-r style="--d:.3s"><span class="k-word">spacing</span> <span class="k-word">is</span> <span class="k-word">the</span> <span class="k-word acc">transition.</span></h2>
+        <div class="k-morph" data-r style="--d:.5s">
+          <span class="k-slab" aria-hidden="true"></span>
+          <span class="k-ghost mono">…and sometimes it stops being type at all</span>
+        </div>
+      </div>
+      <p class="mono micro note-2" data-r style="--d:.66s">letters stretch, mask, trade places — then resolve back to readable. readability always wins the last frame.</p>
+    </div>
+    <div class="cut-tag mono" aria-hidden="true">CUT03</div>
+  </section>
 
-        /* ========================= SCROLL PROGRESS + NAV ========================= */
-        const progress = document.querySelector('.progress');
-        const nav = document.querySelector('.nav');
-        let isTicking = false;
+  <!-- CUT 04 — THE STACK -->
+  <section class="cut cut-4" id="cut4" data-cut="THE STACK" data-index="3">
+    <div class="cut-inner">
+      <div class="split split-rev">
+        <div class="monitor-clip" data-r style="--d:.1s">
+          <div class="monitor" id="monitor">
+            <div class="m-layer m-plate"><span class="mono m-label">plate</span></div>
+            <div class="m-layer m-subject" data-px data-depth="5"><span class="s-fig" aria-hidden="true"></span><span class="mono m-label">subject</span></div>
+            <div class="m-layer m-fx" data-px data-depth="9"><i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i><span class="mono m-label">fx</span></div>
+            <div class="m-layer m-grade"><span class="mono m-label">grade</span></div>
+            <div class="m-layer m-ui"><span class="m-tc mono">00:00:07:12</span><span class="mono m-label">ui</span></div>
+          </div>
+        </div>
+        <div class="split-copy">
+          <p class="kicker mono" data-r style="--d:.05s"><i class="tick"></i>cut 04 · the stack</p>
+          <h2 class="display" data-r style="--d:.12s">every frame<br>is <span class="acc">five lies</span><br>stacked well.</h2>
+          <p class="body-copy" data-r style="--d:.24s">plate, subject, fx, grade, ui — compositing is ordering truth so it reads as one shot. scroll away and back: the stack rebuilds itself, every time, on demand.</p>
+          <div class="stack-chips mono" data-r style="--d:.34s">
+            <span class="s-chip" style="--i:0">plate</span>
+            <span class="s-chip" style="--i:1">subject</span>
+            <span class="s-chip" style="--i:2">fx</span>
+            <span class="s-chip" style="--i:3">grade</span>
+            <span class="s-chip" style="--i:4">ui</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cut-tag mono" aria-hidden="true">CUT04</div>
+  </section>
 
-        function updateScroll() {
-          const max = document.documentElement.scrollHeight - window.innerHeight;
-          const ratio = max > 0 ? window.scrollY / max : 0;
+  <!-- CUT 05 — FINAL CUT -->
+  <section class="cut cut-5" id="cut5" data-cut="FINAL CUT" data-index="4">
+    <div class="cut-inner cut-inner-end">
+      <div class="clapper" id="clapper" data-r style="--d:.12s">
+        <div class="clap-jaw">
+          <i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <div class="clap-body">
+          <div class="clap-row mono"><span>PROD</span><b>/Cy — CUTROOM v1</b></div>
+          <div class="clap-row mono"><span>TAKE</span><b>001 — one take, no renders</b></div>
+          <div class="clap-row mono"><span>DIRECTOR</span><b>CyReX</b></div>
+        </div>
+      </div>
+      <h2 class="end-line" data-r style="--d:1.5s">that's not all<br><span class="acc">i can do.</span></h2>
+      <div class="end-actions" data-r style="--d:1.66s">
+        <a class="btn btn-primary" id="ctaSample" href="#cut5">free sample edit<span class="btn-glow" aria-hidden="true"></span></a>
+        <a class="btn btn-ghost" id="ctaHi" href="#cut5">say hi<span class="btn-glow" aria-hidden="true"></span></a>
+      </div>
+      <p class="mono micro note-3" data-r style="--d:1.8s">retention edits · motion · comp · vfx · bulk — first cut in 48h · 4k/60 upscale $30 / 30s · free sample = risk reversal, cta lives here at the end, as it should</p>
+      <footer class="end-foot mono" data-r style="--d:1.92s">
+        <span>© cyrex — built in motion</span>
+        <span id="frameStamp">frame 0000</span>
+        <span id="footWhisper">beirut · gmt+3</span>
+      </footer>
+    </div>
+    <div class="cut-tag mono" aria-hidden="true">CUT05</div>
+  </section>
 
-          if (progress) {
-            progress.style.transform = `scaleX(${ratio})`;
-          }
-          if (nav) {
-            nav.classList.toggle('scrolled', window.scrollY > 24);
-          }
-          isTicking = false;
-        }
+</main>
 
-        window.addEventListener(
-          'scroll',
-          () => {
-            if (!isTicking) {
-              requestAnimationFrame(updateScroll);
-              isTicking = true;
-            }
-          },
-          { passive: true }
-        );
-        updateScroll();
+<!-- ══════════════ the desk — AE-language timeline, glass chrome ══════════════ -->
+<div id="desk" class="desk">
+  <div class="desk-head">
+    <span class="desk-id mono"><i class="rec-dot"></i>CUTROOM v1</span>
+    <span class="desk-tc mono" id="deskTc">00:00:00:00</span>
+    <span class="desk-fps mono">24f · scrubbable</span>
+    <button class="desk-fold mono" id="deskFold" type="button" aria-expanded="true" aria-label="Fold timeline (U)">u — fold</button>
+  </div>
+  <div class="desk-body" id="deskBody">
+    <div class="desk-ruler mono" aria-hidden="true">
+      <span>00</span><span>06</span><span>12</span><span>18</span><span>24</span><span>30</span>
+    </div>
+    <div class="desk-rows" id="deskRows">
+      <div class="playhead" id="playhead" aria-hidden="true"><i class="ph-grip"></i><i class="ph-line"></i></div>
+      <!-- rows injected by app.js from the live DOM -->
+    </div>
+    <div class="desk-foot mono">
+      <span>layers = cuts</span><span>drag the playhead to scrub</span><span>click a layer to jump</span>
+    </div>
+  </div>
+</div>
 
-        /* ========================= CURSOR GLOW ========================= */
-        const glow = document.querySelector('.cursor-glow');
-        const hasFinePointer = window.matchMedia('(pointer:fine)').matches;
+<div class="grain" aria-hidden="true"></div>
+<div class="flash" id="flash" aria-hidden="true"></div>
 
-        if (glow && hasFinePointer) {
-          let targetX = innerWidth / 2;
-          let targetY = innerHeight / 2;
-          let currentX = targetX;
-          let currentY = targetY;
-          let isAnimating = false;
-
-          function animateGlow() {
-            const dx = targetX - currentX;
-            const dy = targetY - currentY;
-
-            currentX += dx * 0.1;
-            currentY += dy * 0.1;
-
-            glow.style.transform = `translate3d(${currentX.toFixed(2)}px, ${currentY.toFixed(2)}px, 0)`;
-
-            if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
-              requestAnimationFrame(animateGlow);
-            } else {
-              isAnimating = false;
-            }
-          }
-
-          window.addEventListener(
-            'pointermove',
-            (event) => {
-              targetX = event.clientX;
-              targetY = event.clientY;
-              glow.classList.add('on');
-
-              if (!isAnimating) {
-                isAnimating = true;
-                requestAnimationFrame(animateGlow);
-              }
-            },
-            { passive: true }
-          );
-        }
-
-        /* ========================= CARD LIGHTING ========================= */
-        if (hasFinePointer) {
-          document.querySelectorAll('.card').forEach((card) => {
-            card.addEventListener(
-              'pointermove',
-              (event) => {
-                const rect = card.getBoundingClientRect();
-                card.style.setProperty('--x', `${event.clientX - rect.left}px`);
-                card.style.setProperty('--y', `${event.clientY - rect.top}px`);
-              },
-              { passive: true }
-            );
-          });
-        }
-
-        /* ========================= SCROLL REVEALS ========================= */
-        const targets = document.querySelectorAll('.reveal,.stagger');
-
-        if ('IntersectionObserver' in window) {
-          const observer = new IntersectionObserver(
-            (entries) => {
-              entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                  entry.target.classList.add('in');
-                  observer.unobserve(entry.target);
-                }
-              });
-            },
-            {
-              threshold: 0.1,
-              rootMargin: '0px 0px -5% 0px',
-            }
-          );
-          targets.forEach((element) => observer.observe(element));
-        } else {
-          function revealVisible() {
-            targets.forEach((element) => {
-              const rect = element.getBoundingClientRect();
-              if (rect.top < window.innerHeight * 0.88 && rect.bottom > 0) {
-                element.classList.add('in');
-              }
-            });
-          }
-          window.addEventListener('scroll', revealVisible, { passive: true });
-          revealVisible();
-        }
-
-        /* Fallback guarantee */
-        setTimeout(() => {
-          targets.forEach((element) => {
-            const rect = element.getBoundingClientRect();
-            if (rect.top < window.innerHeight) {
-              element.classList.add('in');
-            }
-          });
-        }, 400);
-      })();
-    </script>
-  </body>
+<script src="./app.js"></script>
+</body>
 </html>
