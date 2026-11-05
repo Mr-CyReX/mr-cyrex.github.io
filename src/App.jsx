@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from 'react'
 
 // Review build: three directions side by side, picked with ?d=.
 const DIRECTIONS = {
+  experience: { name: 'Experience', line: 'One continuous run, scene into scene', load: lazy(() => import('./directions/Experience.jsx')) },
   storyboard: { name: 'Storyboard', line: 'Agent runs drawn as a hand animated storyboard', load: lazy(() => import('./directions/Storyboard.jsx')) },
   path: { name: 'Motion path', line: 'The cubic curve from the README, live and draggable', load: lazy(() => import('./directions/MotionPath.jsx')) },
   v1: { name: 'First version', line: 'The night meadow build, kept for comparison', load: lazy(() => import('./v1/App.jsx')) },
@@ -49,7 +50,7 @@ function Picker() {
 }
 
 export default function App() {
-  const id = new URLSearchParams(window.location.search).get('d')
+  const id = new URLSearchParams(window.location.search).get('d') || 'experience'
   const dir = DIRECTIONS[id]
   if (!dir) return <Picker />
   const View = dir.load
