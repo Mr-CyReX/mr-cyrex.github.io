@@ -1,0 +1,128 @@
+@import "tailwindcss";
+@source not "../.claude";
+@source not "../legacy";
+
+@theme {
+  --color-ground: #030507;
+  --color-panel: #070b10;
+  --color-line: #1c242d;
+  --color-line-strong: #303943;
+  --color-ink: #f4f6f8;
+  --color-muted: #a4adb7;
+  --color-dim: #8a949f;
+  --color-sky: #69c8ff;
+  --color-leaf: #8dff78;
+  --color-ember: #ff6b5e;
+
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, Consolas, monospace;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+@layer base {
+  html {
+    background: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--color-ground);
+    overflow-x: clip;
+  }
+  ::selection {
+    background: var(--color-sky);
+    color: var(--color-ground);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-sky);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+}
+
+/* Headline words arrive with a short motion blur, once, on first load. */
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(0.45em);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+.arrive {
+  animation: arrive 900ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 55ms + 250ms);
+}
+
+/* Trace lines in the agent panel. */
+@keyframes line-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.line-in {
+  animation: line-in 220ms var(--ease-out) both;
+}
+
+.btn {
+  transition:
+    transform 160ms var(--ease-out),
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease;
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.ulink {
+  position: relative;
+}
+.ulink::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 260ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+  .btn:hover:active {
+    transform: scale(0.97);
+  }
+  .ulink:hover::after {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  @keyframes arrive {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .line-in {
+    animation-name: none;
+  }
+}
