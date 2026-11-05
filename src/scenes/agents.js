@@ -116,7 +116,7 @@ export function createAgents({ reduce, onStep }) {
     ctx.fill()
     ctx.stroke()
     ctx.fillStyle = n.glow > 0.02 ? hexA('#f4f6f8', 0.6 + n.glow * 0.4) : '#8a949f'
-    ctx.font = `500 ${Math.max(10, Math.min(12, w / 50))}px "DM Mono", ui-monospace, monospace`
+    ctx.font = `500 ${Math.max(10, Math.min(12, w / 50))}px "Geist Mono Variable", ui-monospace, Consolas, monospace`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(label, n.x, n.y + n.r + 14)

@@ -80,7 +80,7 @@ export default function SystemMap() {
       {NODES.map((n) => (
         <g key={n.id}>
           <rect x={n.x} y={n.y} width={W} height={H} rx="10" fill="#070b10" stroke="#303943" />
-          <text x={n.x + W / 2} y={n.y + H / 2 + 4} textAnchor="middle" fill="#a4adb7" fontFamily="DM Mono, ui-monospace, monospace" fontSize="13">
+          <text x={n.x + W / 2} y={n.y + H / 2 + 4} textAnchor="middle" fill="#a4adb7" fontFamily="'Geist Mono Variable', ui-monospace, Consolas, monospace" fontSize="13">
             {n.id}
           </text>
         </g>
