@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { animate, stagger, svg } from 'animejs'
-import { reducedMotion } from '../lib/canvas.js'
+import { reducedMotion } from '../../lib/canvas.js'
 
 const NODES = [
   { id: 'imports', x: 40, y: 60 },

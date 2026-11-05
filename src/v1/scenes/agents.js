@@ -1,4 +1,4 @@
-import { easeInOut, glow, hexA, streak } from '../lib/canvas.js'
+import { easeInOut, glow, hexA, streak } from '../../lib/canvas.js'
 
 export const TOOLS = [
   { id: 'desktop', actions: ['focus the editor window', 'read the accessibility tree', 'click Save'] },

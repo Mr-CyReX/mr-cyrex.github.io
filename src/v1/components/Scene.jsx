@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { mountScene, reducedMotion } from '../lib/canvas.js'
+import { mountScene, reducedMotion } from '../../lib/canvas.js'
 
 // Mounts one of the canvas scenes. `create` must be stable across renders.
 export default function Scene({ create, options, className = '' }) {

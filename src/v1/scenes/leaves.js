@@ -1,4 +1,4 @@
-import { gust, hexA } from '../lib/canvas.js'
+import { gust, hexA } from '../../lib/canvas.js'
 
 const TONES = ['#8dff78', '#6fd06a', '#4fa86a', '#b8f0a0', '#e8c46a']
 

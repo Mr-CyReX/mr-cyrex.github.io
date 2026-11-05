@@ -1,4 +1,4 @@
-import { glow, gust, streak } from '../lib/canvas.js'
+import { glow, gust, streak } from '../../lib/canvas.js'
 
 // Deep red and blue with little green in either, so where they overlap the
 // added light comes out purple instead of white.

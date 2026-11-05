@@ -1,4 +1,4 @@
-import { glow, gust, hexA, streak } from '../lib/canvas.js'
+import { glow, gust, hexA, streak } from '../../lib/canvas.js'
 
 // A night field: layered hills, slow clouds, grass that leans with the wind,
 // and fireflies that smear as they speed up. Scroll speed and pointer movement
