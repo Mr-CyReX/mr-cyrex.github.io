@@ -16,14 +16,30 @@ const easeIn = (x) => x * x * x
 
 const CAPTIONS = [
   { h: 'I build the tools agents work with.', p: 'Mostly in Rust. I build tools I wish existed, then obsess over how they feel.' },
-  { h: 'Agents get a real machine to work on', p: 'Computer Control MCP gives agents real Windows controls, so they stop guessing from screenshots. Hexus is my own harness for the projects, agents and tools around them, written in Rust with GPUI and SQLite.' },
-  { h: "Purple teaming is where I'm heading", p: "Anything that can click, type and run commands on a machine is something I'd rather break myself first. Run the attack, watch the same run from the defender's side, fix what only one side saw." },
-  { h: 'Systems that keep a record', p: 'OpsDesk moves work out of spreadsheets into roles, approvals and imports, with an audit trail over all of it and the data kept local.' },
-  { h: 'I still think like a motion designer', p: 'Timing, hierarchy, transitions and polish end up in the software too. Rill is my excuse to push GPUI, Rive and window motion a little harder.' },
-  { h: 'Most of my work is private', p: 'GitHub only gets to count part of it. The pieces I can share live there.', cta: true },
+  {
+    h: 'Agents get a real machine to work on',
+    p: 'Computer Control MCP gives agents real Windows controls, so they stop guessing from screenshots. Hexus is my own harness for the projects, agents and tools around them, written in Rust with GPUI and SQLite.',
+    m: 'Computer Control MCP gives agents real Windows controls. Hexus is the harness around them, in Rust with GPUI and SQLite.',
+  },
+  {
+    h: "Purple teaming is where I'm heading",
+    p: "Anything that can click, type and run commands on a machine is something I'd rather break myself first. Run the attack, watch the same run from the defender's side, fix what only one side saw.",
+    m: "Anything that can click and run commands on a machine, I'd rather break myself first.",
+  },
+  {
+    h: 'Systems that keep a record',
+    p: 'OpsDesk moves work out of spreadsheets into roles, approvals and imports, with an audit trail over all of it and the data kept local.',
+    m: 'OpsDesk moves work out of spreadsheets into roles, approvals and an audit trail, with the data kept local.',
+  },
+  {
+    h: 'I still think like a motion designer',
+    p: 'Timing, hierarchy, transitions and polish end up in the software too. Rill is my excuse to push GPUI, Rive and window motion a little harder.',
+    m: 'Timing and polish end up in the software too. Rill is where I push GPUI, Rive and window motion.',
+  },
+  { h: 'Most of my work is private', p: 'GitHub only gets to count part of it. The pieces I can share live there.', m: 'The pieces I can share live on GitHub.', cta: true },
 ]
+const TRANSITION_S = 0.95 // one scene change, played at its own pace whatever the scroll does
 const N_SCENES = CAPTIONS.length
-const DWELL = 0.5 // share of each scene's scroll spent at rest before the transition
 
 // ---------- geometry ----------
 
@@ -105,7 +121,11 @@ function label(ctx, text, x, y, color = DIM, size = 12, align = 'left') {
   ctx.fillStyle = color
   ctx.textAlign = align
   ctx.textBaseline = 'middle'
-  ctx.fillText(text, x, y)
+  const cw = ctx.canvas.width / (ctx.getTransform().a || 1)
+  const tw = ctx.measureText(text).width
+  const left = align === 'left' ? x : align === 'right' ? x - tw : x - tw / 2
+  const shift = Math.min(0, cw - 10 - (left + tw)) + Math.max(0, 10 - left)
+  ctx.fillText(text, x + shift, y)
 }
 function withAlpha(ctx, a, fn) {
   const prev = ctx.__a ?? 1
@@ -119,10 +139,10 @@ function withAlpha(ctx, a, fn) {
 // ---------- layout, rebuilt on resize ----------
 
 function layout(w, h) {
-  const portrait = h > w * 1.05
-  const R = portrait ? { x: w * 0.07, y: h * 0.46, w: w * 0.86, h: h * 0.42 } : { x: w * 0.53, y: h * 0.18, w: w * 0.41, h: h * 0.64 }
+  const portrait = h >= w
+  const R = portrait ? { x: 20, y: h * 0.1, w: w - 40, h: h * 0.47 } : { x: w * 0.53, y: h * 0.18, w: w * 0.41, h: h * 0.64 }
   const run = portrait
-    ? [[w * 0.08, h * 0.92], [w * 0.3, h * 0.5], [w * 0.9, h * 1.0], [w * 0.9, h * 0.58]]
+    ? [[w * 0.07, h * 0.5], [w * 0.36, h * 0.66], [w * 0.5, h * 0.12], [w * 0.93, h * 0.2]]
     : [[w * 0.06, h * 0.8], [w * 0.36, h * 1.04], [w * 0.5, h * 0.3], [w * 0.94, h * 0.36]]
   const win = { x: R.x, y: R.y + R.h * 0.04, w: R.w, h: R.h * 0.84 }
   const rows = Array.from({ length: 6 }, (_, i) => ({ x: win.x + 22 + [0, 1, 1, 2, 2, 1][i] * 18, y: win.y + 62 + i * Math.min(30, (win.h - 120) / 6), w: win.w * [0.5, 0.42, 0.38, 0.3, 0.34, 0.4][i] }))
@@ -131,13 +151,17 @@ function layout(w, h) {
     ['imports', 0.08, 0.12], ['local data', 0.78, 0.12],
     ['requests', 0.08, 0.5], ['roles', 0.43, 0.5], ['approvals', 0.78, 0.5],
     ['audit trail', 0.43, 0.88],
-  ].map(([id, fx, fy]) => ({ id, x: R.x + R.w * fx, y: R.y + R.h * fy }))
+  ].map(([id, fx, fy]) => {
+    // keep every box, not just its centre, inside the frame
+    const bw = Math.min(108, R.w * 0.27)
+    return { id, x: R.x + bw / 2 + (R.w - bw) * ((fx - 0.08) / 0.7), y: R.y + R.h * fy }
+  })
   const node = Object.fromEntries(nodes.map((n) => [n.id, n]))
   const edges = [['imports', 'local data'], ['requests', 'roles'], ['roles', 'approvals'], ['approvals', 'local data'], ['roles', 'audit trail'], ['approvals', 'audit trail']].map(([a, b]) => [node[a], node[b]])
   const g = { x: R.x, y: R.y + R.h * 0.04, w: R.w, h: R.h * 0.72 }
   const ease = [[g.x, g.y + g.h], [g.x + HOUSE[0] * g.w, g.y + g.h - HOUSE[1] * g.h], [g.x + HOUSE[2] * g.w, g.y + g.h - HOUSE[3] * g.h], [g.x + g.w, g.y]]
   const close = portrait
-    ? [[w * 0.12, h * 0.86], [w * 0.3, h * 0.66], [w * 0.7, h * 0.9], [w * 0.88, h * 0.7]]
+    ? [[w * 0.1, h * 0.46], [w * 0.3, h * 0.58], [w * 0.62, h * 0.16], [w * 0.88, h * 0.26]]
     : [[w * 0.5, h * 0.74], [w * 0.62, h * 0.86], [w * 0.7, h * 0.46], [w * 0.92, h * 0.5]]
   return { w, h, portrait, R, run: arcTable(run), win, rows, save, nodes, edges, g, ease: arcTable(ease), close: arcTable(close) }
 }
@@ -544,49 +568,58 @@ export default function Experience() {
   const stage = useRef(null)
   const canvas = useRef(null)
   const caps = useRef([])
-  const st = useRef({ L: null, sp: 0, reduce: false, drag: -1 })
+  const st = useRef({ L: null, v: 0, target: 0, shown: -1, reduce: false, drag: -1, top: 0, span: 1 })
 
   useEffect(() => {
     document.documentElement.style.background = GROUND
     document.title = 'Ali Sh'
-    st.current.reduce = prefersReduced()
-    const html = document.documentElement
-    html.style.scrollSnapType = 'y proximity'
+    const s = st.current
+    s.reduce = prefersReduced()
+    // measure once per resize so the frame loop never forces a layout
     const fit = () => {
       const c = canvas.current
       const w = c.clientWidth
       const h = c.clientHeight
-      const dpr = Math.min(2, window.devicePixelRatio || 1)
+      const dpr = Math.min(window.devicePixelRatio || 1, w < 700 ? 1.5 : 2)
       c.width = Math.round(w * dpr)
       c.height = Math.round(h * dpr)
-      st.current.dpr = dpr
-      st.current.L = layout(w, h)
+      s.dpr = dpr
+      s.L = layout(w, h)
+      const el = stage.current
+      s.top = el.getBoundingClientRect().top + window.scrollY
+      s.span = Math.max(1, el.offsetHeight - window.innerHeight)
+    }
+    const onScroll = () => {
+      const p = clamp((window.scrollY - s.top) / s.span) * (N_SCENES - 1)
+      s.target = Math.round(p)
     }
     fit()
+    onScroll()
+    s.v = s.target
     const ro = new ResizeObserver(fit)
     ro.observe(canvas.current)
+    window.addEventListener('scroll', onScroll, { passive: true })
     return () => {
       ro.disconnect()
-      html.style.scrollSnapType = ''
+      window.removeEventListener('scroll', onScroll)
     }
   }, [])
 
   // dragging the run's handles on the first scene
   const onDown = (e) => {
     const s = st.current
-    if (!s.L || s.sp > 0.3) return
+    if (!s.L || s.v > 0.01) return
     const r = canvas.current.getBoundingClientRect()
-    const x = e.clientX - r.left
-    const y = e.clientY - r.top
-    const i = s.L.run.p.findIndex(([px, py]) => Math.hypot(px - x, py - y) < 24)
+    const i = s.L.run.p.findIndex(([px, py]) => Math.hypot(px - (e.clientX - r.left), py - (e.clientY - r.top)) < 24)
     if (i < 0) return
     s.drag = i
+    s.dragRect = r
     canvas.current.setPointerCapture(e.pointerId)
   }
   const onMove = (e) => {
     const s = st.current
     if (s.drag < 0) return
-    const r = canvas.current.getBoundingClientRect()
+    const r = s.dragRect
     const p = s.L.run.p.map((q) => [...q])
     p[s.drag] = [clamp(e.clientX - r.left, 8, s.L.w - 8), clamp(e.clientY - r.top, 8, s.L.h - 8)]
     s.L.run = arcTable(p)
@@ -597,13 +630,15 @@ export default function Experience() {
     const s = st.current
     const L = s.L
     if (!L) return
-    const el = stage.current
-    const rect = el.getBoundingClientRect()
-    const vh = window.innerHeight
-    const target = clamp(-rect.top / Math.max(1, rect.height - vh)) * (N_SCENES - 1)
-    // a little inertia on the camera so wheel steps glide instead of jump
-    s.sp += (target - s.sp) * (1 - Math.exp(-dt * (s.reduce ? 30 : 9)))
-    if (Math.abs(target - s.sp) < 0.0005) s.sp = target
+    // move toward the scene the scroll asked for at the transition's own pace;
+    // a long flick through several scenes plays them faster, never skips them
+    const gap = s.target - s.v
+    if (gap !== 0) {
+      const rate = (s.reduce ? 3.5 : 1 / TRANSITION_S) * Math.max(1, Math.abs(gap) * 0.9)
+      const step = Math.sign(gap) * Math.min(Math.abs(gap), rate * dt)
+      s.v += step
+      if (Math.abs(s.target - s.v) < 1e-4) s.v = s.target
+    }
 
     const ctx = canvas.current.getContext('2d')
     ctx.setTransform(s.dpr, 0, 0, s.dpr, 0, 0)
@@ -611,34 +646,37 @@ export default function Experience() {
     ctx.globalAlpha = 1
     ctx.fillStyle = GROUND
     ctx.fillRect(0, 0, L.w, L.h)
+    const i = Math.min(N_SCENES - 1, Math.floor(s.v + 1e-6))
+    const u = s.v - i
+    if (u < 1e-4 || i >= N_SCENES - 1) SCENES[i](ctx, L, now, s.reduce)
+    else if (s.reduce) {
+      withAlpha(ctx, 1 - u, () => SCENES[i](ctx, L, now, true))
+      withAlpha(ctx, u, () => SCENES[i + 1](ctx, L, now, true))
+    } else TRANSITIONS[i](ctx, L, now, u, false)
 
-    const i = Math.min(N_SCENES - 1, Math.floor(s.sp))
-    const f = s.sp - i
-    if (i >= N_SCENES - 1 || f < DWELL) SCENES[i](ctx, L, now, s.reduce)
-    else {
-      const u = (f - DWELL) / (1 - DWELL)
-      if (s.reduce) {
-        withAlpha(ctx, 1 - u, () => SCENES[i](ctx, L, now, true))
-        withAlpha(ctx, u, () => SCENES[i + 1](ctx, L, now, true))
-      } else TRANSITIONS[i](ctx, L, now, u, false)
+    // captions only change when the scene does; CSS animates the swap
+    const shown = Math.round(s.v)
+    if (shown !== s.shown) {
+      s.shown = shown
+      caps.current.forEach((n, k) => n && (n.dataset.state = k === shown ? 'on' : k < shown ? 'past' : 'next'))
     }
-
-    // captions cross with a short blur, timed to the scene they belong to
-    caps.current.forEach((n, k) => {
-      if (!n) return
-      const d = s.sp - k
-      const vIn = k === 0 ? 1 : clamp((d + 0.2) / 0.15)
-      const vOut = k === N_SCENES - 1 ? 1 : clamp((0.75 - d) / 0.2)
-      const v = Math.min(vIn, vOut)
-      n.style.opacity = v.toFixed(3)
-      n.style.filter = s.reduce || v > 0.98 ? 'none' : `blur(${((1 - v) * 10).toFixed(1)}px)`
-      n.style.transform = s.reduce ? 'none' : `translateY(${((1 - v) * (d > 0 ? -14 : 14)).toFixed(1)}px)`
-      n.style.visibility = v < 0.01 ? 'hidden' : 'visible'
-    })
   })
 
   return (
     <div style={{ background: GROUND, color: INK, fontFamily: '"Geist Variable", ui-sans-serif, system-ui, sans-serif' }}>
+      <style>{`
+        .cap { transition: opacity 420ms cubic-bezier(.16,1,.3,1), transform 520ms cubic-bezier(.16,1,.3,1), visibility 0s linear 520ms; }
+        .cap[data-state="on"] { opacity: 1; transform: none; visibility: visible; transition-delay: 160ms, 160ms, 0s; }
+        .cap[data-state="past"] { opacity: 0; transform: translateY(-14px); visibility: hidden; }
+        .cap[data-state="next"] { opacity: 0; transform: translateY(14px); visibility: hidden; }
+        @media (hover: hover) and (pointer: fine) {
+          .cap { transition-property: opacity, transform, filter, visibility; }
+          .cap[data-state="past"], .cap[data-state="next"] { filter: blur(3px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .cap, .cap[data-state] { transform: none; filter: none; transition: opacity 200ms ease, visibility 0s linear 200ms; }
+        }
+      `}</style>
       <div className="sr-only">
         {CAPTIONS.map((c, k) => (
           <section key={c.h}>
@@ -648,10 +686,7 @@ export default function Experience() {
         ))}
         <a href="https://github.com/Mr-CyReX">Open my GitHub</a>
       </div>
-      <div ref={stage} className="relative" style={{ height: `${100 + (N_SCENES - 1) * 110}svh` }}>
-        {CAPTIONS.map((_, k) => (
-          <div key={k} aria-hidden="true" className="pointer-events-none absolute left-0 h-px w-px snap-start" style={{ top: `${k * 110}svh` }} />
-        ))}
+      <div ref={stage} className="relative" style={{ height: `${100 + (N_SCENES - 1) * 90}svh` }}>
         <div className="sticky top-0 h-[100svh] overflow-hidden">
           <canvas
             ref={canvas}
@@ -663,26 +698,29 @@ export default function Experience() {
             onPointerUp={onUp}
             onPointerCancel={onUp}
           />
-          <div className="pointer-events-none relative mx-auto h-full max-w-6xl px-6 sm:px-10">
+          <div className="pointer-events-none relative mx-auto h-full max-w-6xl">
             {CAPTIONS.map((c, k) => (
               <div
                 key={k}
                 ref={(n) => (caps.current[k] = n)}
                 aria-hidden="true"
-                className="absolute top-20 right-6 left-6 max-w-[30rem] sm:top-24 sm:right-auto sm:left-10"
-                style={{ opacity: k === 0 ? 1 : 0, visibility: k === 0 ? 'visible' : 'hidden' }}
+                data-state={k === 0 ? 'on' : 'next'}
+                className="cap absolute top-24 left-10 max-w-[30rem] portrait:top-auto portrait:right-0 portrait:bottom-0 portrait:left-0 portrait:max-w-none portrait:px-5 portrait:pb-[max(1.75rem,env(safe-area-inset-bottom))]"
               >
                 {k === 0 ? (
-                  <p className="text-[clamp(2.5rem,6vw,5.2rem)] leading-[0.96] font-semibold tracking-[-0.04em] text-balance">{c.h}</p>
+                  <p className="text-[clamp(2.5rem,6vw,5.2rem)] leading-[0.96] font-semibold tracking-[-0.04em] text-balance portrait:text-[2.15rem]">{c.h}</p>
                 ) : (
-                  <p className="text-[clamp(2rem,4.2vw,3.6rem)] leading-[1] font-semibold tracking-[-0.035em] text-balance">{c.h}</p>
+                  <p className="text-[clamp(2rem,4.2vw,3.6rem)] leading-[1] font-semibold tracking-[-0.035em] text-balance portrait:text-[1.85rem]">{c.h}</p>
                 )}
-                <p className="mt-5 text-[clamp(1rem,1.3vw,1.125rem)] leading-relaxed text-[#a4adb7]">{c.p}</p>
+                <p className="mt-5 text-[clamp(1rem,1.3vw,1.125rem)] leading-relaxed text-[#a4adb7] portrait:mt-3 portrait:text-base">
+                  <span className="portrait:hidden">{c.p}</span>
+                  <span className="hidden portrait:inline">{c.m ?? c.p}</span>
+                </p>
                 {c.cta && (
                   <a
                     href="https://github.com/Mr-CyReX"
                     tabIndex={-1}
-                    className="pointer-events-auto mt-8 inline-block rounded-full bg-[#f4f6f8] px-6 py-3 text-sm font-medium text-[#08090b] transition-transform duration-150 active:scale-[0.97]"
+                    className="pointer-events-auto mt-7 inline-flex min-h-11 items-center rounded-full bg-[#f4f6f8] px-6 text-sm font-medium text-[#08090b] transition-transform duration-150 active:scale-[0.97]"
                   >
                     Open my GitHub
                   </a>

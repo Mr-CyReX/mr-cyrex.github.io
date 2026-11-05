@@ -10,9 +10,31 @@ const DIRECTIONS = {
 
 function Switcher({ current }) {
   return (
+    <>
+      <label className="fixed top-3 right-3 z-50 sm:hidden">
+        <span className="sr-only">Direction</span>
+        <select
+          value={current}
+          onChange={(e) => (window.location.search = `?d=${e.target.value}`)}
+          className="h-9 rounded-full border border-white/15 bg-black/70 px-3 text-[13px] text-white"
+        >
+          {Object.entries(DIRECTIONS).map(([id, d]) => (
+            <option key={id} value={id}>
+              {d.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <SwitcherBar current={current} />
+    </>
+  )
+}
+
+function SwitcherBar({ current }) {
+  return (
     <nav
       aria-label="Directions"
-      className="fixed bottom-3 left-1/2 z-50 flex -translate-x-1/2 gap-1 rounded-full bg-black/80 p-1 text-[13px] text-white shadow-[0_6px_24px_rgba(0,0,0,0.25)] backdrop-blur"
+      className="fixed bottom-3 left-1/2 z-50 hidden -translate-x-1/2 gap-1 rounded-full bg-black/80 p-1 text-[13px] text-white shadow-[0_6px_24px_rgba(0,0,0,0.25)] backdrop-blur sm:flex"
     >
       {Object.entries(DIRECTIONS).map(([id, d]) => (
         <a
